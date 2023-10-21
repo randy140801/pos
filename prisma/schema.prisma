@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Product {
+  id        Int      @id @default(autoincrement())
+  sub       String       @unique
+  name String
+  description String
+  price Decimal
+  taxes Boolean @default(true)
+  supplierSub String
+  categorySub String
+  productInventory ProductInventory[]
+  suppliers Supplier @relation(fields: [supplierSub], references: [sub])
+  categories Category @relation(fields: [categorySub], references: [sub])
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())  
+  sub       String    @unique
+  name String
+  description String
+  storeSub String
+  products Product[]
+  store Store @relation(fields: [storeSub], references: [sub]) 
+}
+
+model Supplier {
+  id        Int      @id @default(autoincrement())
+  sub       String    @unique
+  name String
+  address String
+  contact Json[]
+  products Product[]
+  inventory Inventory[]
+}
+
+model Employee {
+  id        Int      @id @default(autoincrement())
+  sub     String      @unique
+  name String
+  address String
+  contact String
+  invoice Invoice[]
+  storeSub String
+  store Store @relation(fields: [storeSub], references: [sub])
+  startDate DateTime
+  endDate DateTime?
+  salary Decimal?
+  jobTitle String?
+  department String?
+  payroll Payroll[]
+}
+
+model Payroll {
+  id Int @id @default(autoincrement())
+  employeeSub String
+  startPeriod DateTime
+  endPeriod DateTime
+  amountPaid Decimal
+  storeSub String
+  store Store @relation(fields: [storeSub], references: [sub])
+  employee Employee @relation(fields: [employeeSub], references: [sub])
+}
+
+model AccountingEntry {
+  id        Int      @id @default(autoincrement())
+  sub String @unique
+  type      String //E.g. 'income', 'expense', 'asset', 'liability', 'equity'
+  description String
+  amount Decimal
+  invoiceSub String
+  date DateTime
+  balance Decimal
+  storeSub String
+  store Store @relation(fields: [storeSub], references: [sub])
+  invoice Invoice @relation(fields: [invoiceSub], references: [sub])
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement()) 
+  sub       String  @unique
+  name String
+  identifier String 
+  email String[]
+  phone String[]
+  address String[]
+  storeSub String
+  invoice Invoice[]
+  store Store @relation(fields: [storeSub], references: [sub])
+  
+}
+
+model Store {
+  id        Int      @id @default(autoincrement())
+  sub       String    @unique
+  name      String
+  address   String
+  inventory Inventory[]
+  categories Category[]
+  employees Employee[]
+  customers Customer[]
+  invoice Invoice[]
+  payroll Payroll[]
+  accEntry AccountingEntry[]
+}
+
+model Inventory{
+  id        Int      @id @default(autoincrement())
+  sub       String    @unique
+  storeSub String 
+  supplierSub String
+  productInventory ProductInventory[]
+  store Store @relation(fields: [storeSub], references: [sub])
+  supplier Supplier @relation(fields: [supplierSub], references: [sub])
+}
+
+model ProductInventory{
+  id      Int   @id @default(autoincrement())
+  productSub String
+  inventorySub String
+  quantity Int
+  product Product @relation(fields: [productSub],references: [sub])
+  inventory Inventory @relation(fields: [inventorySub],references: [sub])
+}
+
+model PaymentMethod {
+  id        Int      @id @default(autoincrement())
+  sub       String    @unique
+  name String
+  description String
+  invoice Invoice[]
+}
+
+model Invoice{
+  id        Int      @id @default(autoincrement())
+  sub       String    @unique
+  subtotal Decimal
+  taxes Decimal
+  total Decimal
+  products Json[]
+  date DateTime
+  employeeSub  String
+  customerSub String
+  paymentMethodSub String
+  storeSub String
+  store Store @relation(fields: [storeSub], references: [sub])
+  customer Customer? @relation(fields: [customerSub], references: [sub])
+  employee Employee @relation(fields: [employeeSub], references: [sub])
+  paymentMethod PaymentMethod @relation(fields: [paymentMethodSub], references: [sub])
+  accEntry AccountingEntry[]
+}
+
+// Restaurant
+
+
+
+model MenuItem {
+  id Int   @id @default(autoincrement()) 
+  item String
+  description String
+  price Decimal
+  categoryId Int 
+}
+
+model Order {
+  OrderID Int   @id @unique
+  CustomerID Int
+  TableNumber String
+  OrderDate DateTime
+  OrderStatus String
+}
+
+model OrderDetail {
+  OrderDetailID Int   @id @unique
+  OrderID Int
+  MenuItemID Int
+  Quantity Int
+  Extras String?
+  ModificationNotes String?
+}
+
+model Table {
+  TableNumber String   @id @unique
+  TableCapacity Int
+  TableStatus String
+}
+
+model Reservation {
+  ReservationID Int   @id @unique
+  CustomerID Int
+  TableNumber String
+  ReservationDate DateTime
+  ReservationTime DateTime
+}
+
+model KitchenStaff {
+  EmployeeID Int   @id @unique
+  EmployeeName String
+  EmployeeRole String
+}
+
+model Ingredient {
+  IngredientID Int   @id @unique
+  IngredientName String
+  IngredientCost Decimal
+  IngredientAllergenInfo String?
+  IngredientStock Int
+}
+
+model DishIngredient {
+  DishIngredientID Int @id @unique
+  MenuItemID Int
+  IngredientID Int
+  IngredientQuantity Decimal
+}
+
+model Extra {
+  ExtraID Int   @id @unique
+  ExtraName String
+  ExtraCost Decimal
+}
+
+model FoodType {
+  FoodTypeID Int   @id @unique
+  FoodTypeName String
+}
